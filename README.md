@@ -1,7 +1,5 @@
 > ⚠️ **PRE-ALPHA SOFTWARE**: This is version 2025.01.02 - untested and under heavy development. Use at your own risk!
 
-> ⚠️ **PRE-ALPHA SOFTWARE**: This is version 2025.01.02 - untested and under heavy development. Use at your own risk!
-
 # Dev 2 Dev Claude Tools Public
 
 A tool to centralize Claude Code conversations by user directory and ensure no traces of Claude usage remain in project directories or git commits.
