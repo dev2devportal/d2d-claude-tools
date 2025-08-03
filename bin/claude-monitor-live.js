@@ -12,7 +12,16 @@ const fs = require('fs-extra');
 const path = require('path');
 const chalk = require('chalk');
 const os = require('os');
-const blessed = require('blessed');
+
+// Check if blessed is available
+let blessed;
+try {
+    blessed = require('blessed');
+} catch (error) {
+    console.error(chalk.red('Error: blessed package not installed'));
+    console.log('Please run: npm install blessed');
+    process.exit(1);
+}
 
 // Usage tracking file location
 const USAGE_FILE = path.join(
@@ -26,8 +35,7 @@ const SESSION_DIR = path.join(
     'sessions'
 );
 
-// Import subscription tiers from main monitor
-const UsageMonitor = require('./claude-usage-monitor.js').UsageMonitor || class {};
+// Note: Subscription tiers are defined inline in getTier() method
 
 class LiveMonitor {
     constructor(options = {}) {
@@ -441,33 +449,26 @@ class LiveMonitor {
 program
     .name('claude-monitor-live')
     .description('Real-time Claude usage monitor')
-    .version('1.0.0');
-
-program
+    .version('1.0.0')
     .option('-i, --interval <seconds>', 'Update interval in seconds', '5')
     .option('-r, --reset-hours <hours>', 'Reset period in hours (default: 24, use 6 for aggressive limits)', '24')
     .option('-a, --alert-threshold <percent>', 'Alert threshold percentage (0-100)', '70')
-    .action(async (options) => {
-        const monitor = new LiveMonitor({
-            interval: parseInt(options.interval) * 1000,
-            resetHours: parseFloat(options.resetHours),
-            alertThreshold: parseFloat(options.alertThreshold) / 100
-        });
-        
-        console.log(chalk.blue('Starting Claude Live Monitor...'));
-        console.log(chalk.gray(`Reset period: ${options.resetHours} hours`));
-        console.log(chalk.gray(`Update interval: ${options.interval} seconds`));
-        console.log(chalk.gray(`Alert threshold: ${options.alertThreshold}%\n`));
-        
-        // Wait a moment for the message to be read
-        setTimeout(() => monitor.start(), 1500);
-    });
+    .parse(process.argv);
 
-// Handle the case where blessed is not installed
-if (!blessed) {
-    console.error(chalk.red('Error: blessed package not installed'));
-    console.log('Please run: npm install blessed');
-    process.exit(1);
-}
+// Get options
+const options = program.opts();
 
-program.parse();
+// Start the monitor
+const monitor = new LiveMonitor({
+    interval: parseInt(options.interval) * 1000,
+    resetHours: parseFloat(options.resetHours),
+    alertThreshold: parseFloat(options.alertThreshold) / 100
+});
+
+console.log(chalk.blue('Starting Claude Live Monitor...'));
+console.log(chalk.gray(`Reset period: ${options.resetHours} hours`));
+console.log(chalk.gray(`Update interval: ${options.interval} seconds`));
+console.log(chalk.gray(`Alert threshold: ${options.alertThreshold}%\n`));
+
+// Wait a moment for the message to be read
+setTimeout(() => monitor.start(), 1500);
