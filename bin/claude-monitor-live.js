@@ -110,7 +110,7 @@ class LiveMonitor {
             top: 2,
             left: 2,
             width: '50%-4',
-            height: 10,
+            height: 12,
             border: {
                 type: 'line'
             },
@@ -129,7 +129,7 @@ class LiveMonitor {
             top: 2,
             right: 2,
             width: '50%-4',
-            height: 10,
+            height: 12,
             border: {
                 type: 'line'
             },
@@ -145,7 +145,7 @@ class LiveMonitor {
         this.boxes.progress = blessed.progressbar({
             parent: container,
             label: ' Combined Usage ',
-            top: 13,
+            top: 15,
             left: 2,
             right: 2,
             height: 3,
@@ -211,6 +211,24 @@ class LiveMonitor {
             const sessionPercentage = (sessionStats.activeSessions / tier.concurrentSessions) * 100;
             const combinedPercentage = Math.max(messagePercentage, tokenPercentage, sessionPercentage);
 
+            // Calculate rates
+            const safeRate = parseFloat(this.getSafeRate(usageData, tier));
+            const currentRate = sessionStats.activeSessions * 10; // Estimate 10 msg/hr per session
+            const rateRatio = safeRate > 0 ? (currentRate / safeRate) : 0;
+            
+            // Create rate indicator
+            let rateIndicator = '';
+            let rateColor = 'green-fg';
+            if (rateRatio > 1.0) {
+                rateColor = 'red-fg';
+                rateIndicator = this.createRateBar(rateRatio, 'red');
+            } else if (rateRatio > 0.8) {
+                rateColor = 'yellow-fg';
+                rateIndicator = this.createRateBar(rateRatio, 'yellow');
+            } else {
+                rateIndicator = this.createRateBar(rateRatio, 'green');
+            }
+            
             // Update usage box
             const usageContent = [
                 `{bold}Subscription:{/bold} ${tier.name}`,
@@ -220,7 +238,9 @@ class LiveMonitor {
                 '',
                 `{bold}Reset in:{/bold} {cyan-fg}${this.getTimeUntilReset(usageData.currentPeriod.startDate)}{/cyan-fg}`,
                 '',
-                `{bold}Safe rate:{/bold} ${this.getSafeRate(usageData, tier)} msg/hr`
+                `{bold}Current rate:{/bold} {${rateColor}}${currentRate.toFixed(1)} msg/hr{/${rateColor}}`,
+                `{bold}Safe rate:{/bold} ${safeRate.toFixed(1)} msg/hr`,
+                rateIndicator
             ].join('\n');
             this.boxes.usage.setContent(usageContent);
 
@@ -442,6 +462,33 @@ class LiveMonitor {
         if (hours > 0) return `${hours}h ${minutes % 60}m`;
         if (minutes > 0) return `${minutes}m`;
         return `${seconds}s`;
+    }
+    
+    createRateBar(ratio, color) {
+        const barWidth = 20;
+        const filledWidth = Math.min(barWidth, Math.round(ratio * barWidth));
+        const emptyWidth = barWidth - filledWidth;
+        
+        let bar = '';
+        if (color === 'red') {
+            bar = `{red-fg}${'▓'.repeat(filledWidth)}{/red-fg}`;
+        } else if (color === 'yellow') {
+            bar = `{yellow-fg}${'▓'.repeat(filledWidth)}{/yellow-fg}`;
+        } else {
+            bar = `{green-fg}${'▓'.repeat(filledWidth)}{/green-fg}`;
+        }
+        bar += `{gray-fg}${'░'.repeat(emptyWidth)}{/gray-fg}`;
+        
+        let label = '';
+        if (ratio > 1.0) {
+            label = ` {red-fg}EXCEEDING!{/red-fg}`;
+        } else if (ratio > 0.8) {
+            label = ` {yellow-fg}CAUTION{/yellow-fg}`;
+        } else {
+            label = ` {green-fg}SAFE{/green-fg}`;
+        }
+        
+        return `Rate: [${bar}]${label}`;
     }
 }
 

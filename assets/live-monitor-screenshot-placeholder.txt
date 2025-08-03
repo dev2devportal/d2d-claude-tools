@@ -4,8 +4,10 @@ Please replace ../assets/live-monitor-screenshot.png with an actual screenshot s
 
 1. The live monitor in action
 2. Multiple sections visible (Usage, Sessions, Progress, Alerts)
-3. Some example alerts
-4. The terminal should be large enough to show all sections clearly
+3. The new Current Rate and Safe Rate comparison
+4. The rate indicator bar (green/yellow/red)
+5. Some example alerts
+6. The terminal should be large enough to show all sections clearly
 
 Suggested terminal size: At least 80x30 characters
 

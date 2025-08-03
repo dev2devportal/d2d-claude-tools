@@ -26,11 +26,31 @@ This guide explains every field in the claude-monitor-live display and how they'
 - Time until usage counters reset to zero
 - Based on when current period started + reset hours
 
+**Current rate: 20.0 msg/hr**
+- **What it means**: Your estimated current usage rate
+- **Calculation**: (Active sessions) × 10 messages/hour
+- **Example**: 2 sessions × 10 = 20.0 msg/hr
+- **Color coding**:
+  - Green: Well below safe rate
+  - Yellow: Approaching safe rate (>80%)
+  - Red: Exceeding safe rate!
+
 **Safe rate: 62.3 msg/hr**
 - **What it means**: Maximum messages per hour you can send without exceeding limits
 - **Calculation**: (Messages remaining) ÷ (Hours until reset)
 - **Example**: (1500 - 234) ÷ 4.53 hours = 279.7 msg/hr
-- **Purpose**: Helps you pace your usage to avoid hitting limits
+- **Purpose**: Your "speed limit" to avoid hitting limits
+
+**Rate Indicator Bar**
+```
+Rate: [▓▓▓▓░░░░░░░░░░░░░░░░] SAFE
+```
+- Visual comparison of current rate vs safe rate
+- Bar fills based on ratio: current/safe
+- Labels:
+  - SAFE (green): Under 80% of safe rate
+  - CAUTION (yellow): 80-100% of safe rate
+  - EXCEEDING! (red): Over 100% of safe rate
 
 ### 2. Active Sessions (Top Right)
 
@@ -96,14 +116,24 @@ Example: (234 / 1500) × 100 = 15.6%
 Example: (1,200,000 / 10,000,000) × 100 = 12.0%
 ```
 
-### Safe Rate (CORRECTED)
+### Current Rate
+```
+Active sessions × 10 messages/hour per session
+Example: 2 sessions × 10 = 20.0 messages/hour
+```
+
+### Safe Rate
 ```
 Messages remaining / Hours until reset
 Example: (1500 - 234) / 4.53 = 279.7 messages/hour
+```
 
-If you have 2 active sessions:
-Estimated usage: 2 × 10 = 20 messages/hour
-Safety margin: 279.7 - 20 = 259.7 messages/hour buffer
+### Rate Ratio (for indicator bar)
+```
+Current rate / Safe rate
+Example: 20.0 / 279.7 = 0.07 (7% - SAFE)
+Example: 250.0 / 279.7 = 0.89 (89% - CAUTION)
+Example: 300.0 / 279.7 = 1.07 (107% - EXCEEDING!)
 ```
 
 ### Combined Usage
