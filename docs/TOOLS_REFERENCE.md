@@ -8,6 +8,7 @@ This document provides detailed information about each tool in the d2d-claude-to
 - [claude-history](#claude-history)
 - [claude-config](#claude-config)
 - [claude-usage-monitor](#claude-usage-monitor)
+- [claude-monitor-live](#claude-monitor-live)
 - [claude-wrapper](#claude-wrapper)
 - [claude-env](#claude-env)
 
@@ -297,6 +298,76 @@ The monitor shows:
 - Time until reset
 - Warnings if approaching limits
 - Remaining messages and safe usage rate
+
+## claude-monitor-live
+
+Real-time usage monitor that runs in a separate terminal to prevent mid-session downgrades.
+
+### Usage
+
+```bash
+claude-monitor-live [options]
+```
+
+### Options
+
+- `-i, --interval <seconds>` - Update interval in seconds (default: 5)
+- `-r, --reset-hours <hours>` - Reset period in hours (default: 24, use 6 for aggressive tracking)
+- `-a, --alert-threshold <percent>` - Alert threshold percentage 0-100 (default: 70)
+- `-h, --help` - Display help information
+
+### Features
+
+- **Real-time monitoring** - Updates every 5 seconds by default
+- **Visual dashboard** - Terminal UI with usage stats, progress bars, and alerts
+- **Active session tracking** - Shows all active Claude sessions
+- **Smart alerts** - Warnings before hitting limits
+- **Rate monitoring** - Tracks if current usage rate exceeds safe rate
+- **Color-coded warnings** - Green/Yellow/Red indicators
+
+### Display Sections
+
+1. **Current Usage** - Messages, tokens, subscription tier, time until reset
+2. **Active Sessions** - Number of concurrent sessions and their duration
+3. **Progress Bar** - Visual representation of combined usage percentage
+4. **Alerts** - Real-time warnings and notifications with timestamps
+
+### Examples
+
+```bash
+# Start with default settings (24-hour reset, 5-second updates)
+claude-monitor-live
+
+# Use 6-hour reset period for more aggressive monitoring
+claude-monitor-live --reset-hours 6
+
+# Update every 2 seconds
+claude-monitor-live --interval 2
+
+# Alert at 60% usage instead of 70%
+claude-monitor-live --alert-threshold 60
+
+# Combine options for Max tier users
+claude-monitor-live --reset-hours 6 --interval 3 --alert-threshold 65
+```
+
+### Alert Types
+
+- **Critical (Red)** - Usage above 90%, immediate downgrade risk
+- **Warning (Yellow)** - Usage above 70%, should slow down
+- **Session Alert** - Too many concurrent sessions
+- **Rate Alert** - Current rate exceeds safe rate for remaining time
+
+### Best Practices
+
+1. **Keep it running** - Open in a separate terminal while working
+2. **Watch the alerts** - Pay attention to warnings, especially rate alerts
+3. **Adjust for your tier** - Max users might want `--reset-hours 6`
+4. **Position strategically** - Place monitor terminal where you'll see it
+
+### Keyboard Controls
+
+- `q` or `Ctrl+C` - Quit the monitor
 
 ## claude-wrapper
 

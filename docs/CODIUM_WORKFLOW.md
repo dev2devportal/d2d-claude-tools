@@ -49,23 +49,35 @@ which claude
 
 ### Starting Your Work Session
 
-1. **Open terminal and navigate to your project**
+1. **Open a terminal for live monitoring** (RECOMMENDED)
+   ```bash
+   # Start the live monitor to watch usage in real-time
+   claude-monitor-live
+   
+   # Or for Max tier with potential 6-hour resets:
+   claude-monitor-live --reset-hours 6 --alert-threshold 65
+   ```
+   Keep this terminal visible while working!
+
+2. **In another terminal, navigate to your project**
    ```bash
    cd ~/Documents/Dev2Dev/Clients/MyProject/feature-branch
    ```
 
-2. **Start VSCodium**
+3. **Start VSCodium**
    ```bash
    codium .
    ```
 
-3. **In VSCodium's integrated terminal, use claude-wrapper**
+4. **In VSCodium's integrated terminal, use claude-wrapper**
    ```bash
    claude-wrapper
    ```
 
 That's it! You now have:
 - ✅ Full Claude Code interface with menus and prompts
+- ✅ Real-time usage monitoring in separate terminal
+- ✅ Warnings BEFORE hitting limits
 - ✅ Automatic usage tracking
 - ✅ Centralized chat storage
 - ✅ No `.claude` directories in your project
@@ -106,6 +118,38 @@ When you run `claude-wrapper`, you'll see:
 
    >
    ```
+
+### Live Monitor Display
+
+In your monitoring terminal, you'll see a real-time dashboard:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│         Claude Usage Monitor - Live                     │
+├─────────────────────────────────────────────────────────┤
+│ ┌─ Current Usage ─────┐ ┌─ Active Sessions ────────┐   │
+│ │ Subscription: Max   │ │ Active: 2 / 7          │   │
+│ │                     │ │ Today: 5 total         │   │
+│ │ Messages: 234/1500  │ │                        │   │
+│ │ (15.6%)            │ │ Current Sessions:       │   │
+│ │ Tokens: 1.2M/10.0M │ │  • 12345 - 45m         │   │
+│ │ (12.0%)            │ │  • 67890 - 12m         │   │
+│ │                     │ │                        │   │
+│ │ Reset in: 4h 32m   │ │                        │   │
+│ │ Safe rate: 62 msg/hr│ │                        │   │
+│ └─────────────────────┘ └────────────────────────┘   │
+│                                                        │
+│ ┌─ Combined Usage ──────────────────────────────────┐ │
+│ │ ████████░░░░░░░░░░░░░░░░░░░░ 26.7%              │ │
+│ └──────────────────────────────────────────────────┘ │
+│                                                        │
+│ ┌─ Alerts ──────────────────────────────────────────┐ │
+│ │ [10:32:15] ⚠️  WARNING: Usage above 70%          │ │
+│ │ [10:45:22] ⚠️  Current rate exceeds safe rate    │ │
+│ └──────────────────────────────────────────────────┘ │
+│          Press q to quit | Updates every 5s           │
+└─────────────────────────────────────────────────────────┘
+```
 
 ## Features While Working
 

@@ -25,13 +25,15 @@
     "claude-history": "./bin/claude-history.js",
     "claude-config": "./bin/claude-config.js",
     "claude-usage-monitor": "./bin/claude-usage-monitor.js",
+    "claude-monitor-live": "./bin/claude-monitor-live.js",
     "claude": "./bin/claude"
   },
   "dependencies": {
     "commander": "^11.0.0",
     "fs-extra": "^11.1.1",
     "glob": "^10.3.0",
-    "chalk": "^4.1.2"
+    "chalk": "^4.1.2",
+    "blessed": "^0.1.81"
   },
   "engines": {
     "node": ">=14.0.0"

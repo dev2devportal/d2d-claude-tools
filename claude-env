@@ -65,7 +65,7 @@ export CLAUDE_CENTRAL_STORAGE="${CLAUDE_CENTRAL_STORAGE:-$HOME/.claude-centraliz
 mkdir -p "$CLAUDE_CENTRAL_STORAGE"
 
 echo -e "${GREEN}Claude tools environment activated!${NC}"
-echo -e "Tools available: claude-clean, claude-history, claude-config, claude-usage-monitor"
+echo -e "Tools available: claude-clean, claude-history, claude-config, claude-usage-monitor, claude-monitor-live"
 echo -e "Chat storage: $CLAUDE_CENTRAL_STORAGE"
 echo ""
 
@@ -78,6 +78,7 @@ fi
 # Add notice about the claude wrapper
 if [ -f "$SCRIPT_DIR/bin/claude-wrapper" ]; then
     echo -e "${YELLOW}Note: Use 'claude-wrapper' command to automatically track Claude CLI usage${NC}"
+    echo -e "${YELLOW}      Use 'claude-monitor-live' in another terminal for real-time monitoring${NC}"
     echo ""
 fi
 
@@ -111,6 +112,7 @@ claude-clean() { "$SCRIPT_DIR/bin/claude-clean.js" "\$@"; }
 claude-history() { "$SCRIPT_DIR/bin/claude-history.js" "\$@"; }
 claude-config() { "$SCRIPT_DIR/bin/claude-config.js" "\$@"; }
 claude-usage-monitor() { "$SCRIPT_DIR/bin/claude-usage-monitor.js" "\$@"; }
+claude-monitor-live() { "$SCRIPT_DIR/bin/claude-monitor-live.js" "\$@"; }
 EOF
     
     # Start a new bash session with our custom bashrc
