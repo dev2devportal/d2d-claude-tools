@@ -201,7 +201,16 @@ class LiveMonitor {
     async updateDisplay() {
         try {
             // Load current usage data
-            const usageData = await this.loadUsageData();
+            let usageData = await this.loadUsageData();
+            
+            // Check if we need to reset the period
+            const hoursUntilReset = this.getHoursUntilReset(usageData.currentPeriod.startDate);
+            if (hoursUntilReset <= 0) {
+                // Period has expired, trigger a reset
+                this.addAlert('🔄 Usage period reset! Counters cleared.', 'cyan');
+                usageData = await this.resetUsagePeriod(usageData);
+            }
+            
             const sessionStats = await this.getSessionStats();
             const tier = this.getTier(usageData.subscription);
 
@@ -212,9 +221,10 @@ class LiveMonitor {
             const combinedPercentage = Math.max(messagePercentage, tokenPercentage, sessionPercentage);
 
             // Calculate rates
-            const safeRate = parseFloat(this.getSafeRate(usageData, tier));
+            const hoursLeft = this.getHoursUntilReset(usageData.currentPeriod.startDate);
+            const safeRate = hoursLeft > 0 ? parseFloat(this.getSafeRate(usageData, tier)) : 0;
             const currentRate = sessionStats.activeSessions * 10; // Estimate 10 msg/hr per session
-            const rateRatio = safeRate > 0 ? (currentRate / safeRate) : 0;
+            const rateRatio = safeRate > 0 ? (currentRate / safeRate) : (currentRate > 0 ? 2.0 : 0); // Show as exceeding if no time left
             
             // Create rate indicator
             let rateIndicator = '';
@@ -278,7 +288,17 @@ class LiveMonitor {
             this.screen.render();
 
         } catch (error) {
+            // Log error but don't crash
+            console.error('Error in updateDisplay:', error);
             this.addAlert(`Error updating display: ${error.message}`, 'red');
+            
+            // Try to continue with basic display
+            try {
+                this.boxes.alerts.setContent(this.boxes.alerts.getContent());
+                this.screen.render();
+            } catch (renderError) {
+                console.error('Error rendering screen:', renderError);
+            }
         }
     }
 
@@ -422,18 +442,27 @@ class LiveMonitor {
     }
 
     getTimeUntilReset(startDate) {
+        if (!startDate) return '0m';
+        
         const start = new Date(startDate);
         const resetTime = new Date(start.getTime() + this.resetHours * 60 * 60 * 1000);
         const now = new Date();
-        const hoursLeft = Math.max(0, (resetTime - now) / (1000 * 60 * 60));
+        const msLeft = resetTime - now;
         
-        const hours = Math.floor(hoursLeft);
-        const minutes = Math.round((hoursLeft - hours) * 60);
+        if (msLeft <= 0) return '0m';
         
-        return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+        const hoursLeft = Math.floor(msLeft / (1000 * 60 * 60));
+        const minutesLeft = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
+        
+        if (hoursLeft > 0) {
+            return `${hoursLeft}h ${minutesLeft}m`;
+        }
+        return `${minutesLeft}m`;
     }
 
     getHoursUntilReset(startDate) {
+        if (!startDate) return 0;
+        
         const start = new Date(startDate);
         const resetTime = new Date(start.getTime() + this.resetHours * 60 * 60 * 1000);
         const now = new Date();
@@ -489,6 +518,43 @@ class LiveMonitor {
         }
         
         return `Rate: [${bar}]${label}`;
+    }
+    
+    async resetUsagePeriod(usageData) {
+        // Archive the old period if it has data
+        if (usageData.currentPeriod.messageCount > 0 || usageData.currentPeriod.tokenCount > 0) {
+            if (!usageData.history) usageData.history = [];
+            usageData.history.push({
+                ...usageData.currentPeriod,
+                endDate: new Date().toISOString()
+            });
+            
+            // Keep only last 30 days of history
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            usageData.history = usageData.history.filter(period => 
+                new Date(period.startDate) > thirtyDaysAgo
+            );
+        }
+        
+        // Reset current period
+        usageData.currentPeriod = {
+            startDate: new Date().toISOString(),
+            messageCount: 0,
+            tokenCount: 0,
+            sessionCount: 0,
+            peakConcurrentSessions: 0,
+            lastUpdated: new Date().toISOString()
+        };
+        
+        // Save the reset data
+        try {
+            await fs.writeJson(USAGE_FILE, usageData, { spaces: 2 });
+        } catch (error) {
+            this.addAlert(`Error saving reset data: ${error.message}`, 'red');
+        }
+        
+        return usageData;
     }
 }
 
