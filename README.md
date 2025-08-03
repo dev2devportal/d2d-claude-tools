@@ -1,5 +1,7 @@
 > ⚠️ **PRE-ALPHA SOFTWARE**: This is version 2025.01.02 - untested and under heavy development. Use at your own risk!
 
+> ⚠️ **PRE-ALPHA SOFTWARE**: This is version 2025.01.02 - untested and under heavy development. Use at your own risk!
+
 # Dev 2 Dev Claude Tools Public
 
 A tool to centralize Claude Code conversations by user directory and ensure no traces of Claude usage remain in project directories or git commits.
@@ -79,10 +81,7 @@ Within the Claude environment (or system-wide if installed), all tools are avail
 claude-clean -r
 
 # View previous chat histories
-claude-history
-
-# Configure centralized storage location
-claude-config --storage-path ~/claude-chats
+claude-history list
 
 # Monitor Claude usage
 claude-usage-monitor              # Show current status
@@ -93,6 +92,8 @@ claude-usage-monitor history      # Show usage history
 # Use the Claude CLI wrapper (if you have Claude CLI installed)
 claude-wrapper                    # Runs claude with automatic usage tracking
 ```
+
+See the [Tools Reference](docs/TOOLS_REFERENCE.md) for complete documentation of all commands and options.
 
 Or run directly without entering the environment:
 
@@ -139,6 +140,7 @@ This project:
 
 Comprehensive documentation is available in the `docs/` directory:
 
+- [Tools Reference](docs/TOOLS_REFERENCE.md) - Complete reference for all tools, commands, and options
 - [Architecture Documentation](docs/ARCHITECTURE.md) - System design and component details
 - [Usage Guide](docs/USAGE_GUIDE.md) - Detailed usage instructions and workflows
 - [API Reference](docs/API_REFERENCE.md) - Technical API documentation

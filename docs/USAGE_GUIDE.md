@@ -7,6 +7,8 @@
 4. [Troubleshooting](#troubleshooting)
 5. [Advanced Usage](#advanced-usage)
 
+> **Note:** For complete documentation of all tools and their options, see the [Tools Reference](TOOLS_REFERENCE.md).
+
 ## Initial Setup
 
 ### Prerequisites
@@ -101,7 +103,11 @@ claude-history --since 2025-01-01
 
 ## Tool Reference
 
-### claude-env
+> **For complete documentation of all tools, commands, and options, see the [Tools Reference](TOOLS_REFERENCE.md).**
+
+### Quick Reference
+
+#### claude-env
 
 The main entry point for the isolated environment.
 
