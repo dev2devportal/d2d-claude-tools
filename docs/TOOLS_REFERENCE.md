@@ -451,11 +451,29 @@ Environment wrapper that activates the Claude tools environment with proper Node
 Inside the claude-env shell, tools are available as both commands and functions:
 
 ```bash
-# Inside claude-env shell
-[claude-env]$ claude-clean -r
-[claude-env]$ claude-history list
-[claude-env]$ claude-usage-monitor status
+# Inside d2dtool-env shell
+(d2dtool-env) $ claude-clean -r
+(d2dtool-env) $ claude-history list
+(d2dtool-env) $ claude-usage-monitor status
 ```
+
+### Environment Indicators
+
+When in d2dtool-env, you'll see:
+- **Prompt prefix**: `(d2dtool-env)` in cyan color
+- **Environment variables**: `CLAUDE_ENV_ACTIVE=1` and `CLAUDE_ENV` set
+- **deactivate command**: Type `deactivate` to exit the environment (like Python venv)
+
+### Deactivating
+
+To exit the d2dtool-env without closing your terminal:
+```bash
+(d2dtool-env) $ deactivate
+D2D Tools environment deactivated
+$ # Now back to normal shell
+```
+
+Or simply type `exit` to close the claude-env shell entirely.
 
 ## Installation Options
 

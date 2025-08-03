@@ -57,6 +57,8 @@ fi
 # Add claude-tools to PATH for this session
 export PATH="$SCRIPT_DIR/bin:$PATH"
 export CLAUDE_TOOLS_HOME="$SCRIPT_DIR"
+export CLAUDE_ENV_ACTIVE=1
+export CLAUDE_ENV="$SCRIPT_DIR"
 
 # Set up environment variable for centralized chat storage
 export CLAUDE_CENTRAL_STORAGE="${CLAUDE_CENTRAL_STORAGE:-$HOME/.claude-centralized}"
@@ -97,23 +99,66 @@ elif [ "$1" == "bash" ] || [ -z "$1" ]; then
     
     # Create a temporary bashrc that includes our tools in PATH
     temp_bashrc=$(mktemp)
-    cat > "$temp_bashrc" <<EOF
+    cat > "$temp_bashrc" <<'EOF'
 # Source user's bashrc if it exists
-[ -f ~/.bashrc ] && source ~/.bashrc
+if [ -f ~/.bashrc ]; then
+    # Save the original PS1 before sourcing
+    _OLD_VIRTUAL_PS1="$PS1"
+    source ~/.bashrc
+fi
 
 # Add claude tools to PATH
-export PATH="$SCRIPT_DIR/bin:\$PATH"
+export PATH="SCRIPT_DIR_PLACEHOLDER/bin:$PATH"
 
-# Set custom prompt
-PS1="[claude-env] \$PS1"
+# Set environment variable to indicate we're in claude-env
+export CLAUDE_ENV_ACTIVE=1
+export CLAUDE_ENV="SCRIPT_DIR_PLACEHOLDER"
 
 # Make tools available as functions for convenience
-claude-clean() { "$SCRIPT_DIR/bin/claude-clean.js" "\$@"; }
-claude-history() { "$SCRIPT_DIR/bin/claude-history.js" "\$@"; }
-claude-config() { "$SCRIPT_DIR/bin/claude-config.js" "\$@"; }
-claude-usage-monitor() { "$SCRIPT_DIR/bin/claude-usage-monitor.js" "\$@"; }
-claude-monitor-live() { "$SCRIPT_DIR/bin/claude-monitor-live.js" "\$@"; }
+claude-clean() { "SCRIPT_DIR_PLACEHOLDER/bin/claude-clean.js" "$@"; }
+claude-history() { "SCRIPT_DIR_PLACEHOLDER/bin/claude-history.js" "$@"; }
+claude-config() { "SCRIPT_DIR_PLACEHOLDER/bin/claude-config.js" "$@"; }
+claude-usage-monitor() { "SCRIPT_DIR_PLACEHOLDER/bin/claude-usage-monitor.js" "$@"; }
+claude-monitor-live() { "SCRIPT_DIR_PLACEHOLDER/bin/claude-monitor-live.js" "$@"; }
+
+# Function to deactivate d2dtool-env (like Python's deactivate)
+deactivate() {
+    # Reset PS1
+    if [ -n "${_OLD_VIRTUAL_PS1-}" ]; then
+        PS1="$_OLD_VIRTUAL_PS1"
+        unset _OLD_VIRTUAL_PS1
+    fi
+    
+    # Remove from PATH
+    export PATH=$(echo "$PATH" | sed -e "s|SCRIPT_DIR_PLACEHOLDER/bin:||g")
+    
+    # Unset environment variables
+    unset CLAUDE_ENV_ACTIVE
+    unset CLAUDE_ENV
+    
+    # Remove functions
+    unset -f claude-clean
+    unset -f claude-history
+    unset -f claude-config
+    unset -f claude-usage-monitor
+    unset -f claude-monitor-live
+    unset -f deactivate
+    
+    echo "D2D Tools environment deactivated"
+}
+
+# Set custom prompt - this works more reliably than PROMPT_COMMAND
+if [ -z "${_OLD_VIRTUAL_PS1-}" ]; then
+    _OLD_VIRTUAL_PS1="$PS1"
+fi
+PS1="\[\033[1;36m\](d2dtool-env)\[\033[0m\] $_OLD_VIRTUAL_PS1"
+
+# Export the modified PS1
+export PS1
 EOF
+    
+    # Replace placeholders with actual script directory
+    sed -i "s|SCRIPT_DIR_PLACEHOLDER|$SCRIPT_DIR|g" "$temp_bashrc"
     
     # Start a new bash session with our custom bashrc
     bash --rcfile "$temp_bashrc" -i
