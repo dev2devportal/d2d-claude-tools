@@ -11,6 +11,9 @@ This document provides detailed information about each tool in the d2d-claude-to
 - [claude-wrapper](#claude-wrapper)
 - [claude-env](#claude-env)
 
+For specific workflows, see:
+- [VSCodium + Claude Code Workflow](CODIUM_WORKFLOW.md) - Using Claude Code in VSCodium with full tracking
+
 ## claude-clean
 
 Removes Claude-related artifacts from project directories to prevent accidental commits.

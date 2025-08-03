@@ -136,8 +136,8 @@ NEW_PATH=$(echo "$PATH" | tr ':' '\n' | grep -v "^$SCRIPT_BIN_DIR$" | tr '\n' ':
 export PATH="$NEW_PATH"
 
 # Now check if the real claude is available
-if command -v claude &> /dev/null; then
-    REAL_CLAUDE=$(command -v claude)
+REAL_CLAUDE=$(command -v claude 2>/dev/null)
+if [ -n "$REAL_CLAUDE" ]; then
     # Restore original PATH
     export PATH="$ORIGINAL_PATH"
     # Create temp file for output
