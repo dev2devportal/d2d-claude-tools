@@ -143,7 +143,20 @@ if [ -n "$REAL_CLAUDE" ]; then
     # Create temp file for output
     output_file=$(mktemp)
     
-    # Run the real claude and capture its output
+    # Check if we're running interactively without arguments
+    if [ $# -eq 0 ] && [ -t 0 ] && [ -t 1 ]; then
+        # Interactive mode - run Claude Code normally without piping
+        # This preserves the interactive interface
+        "$REAL_CLAUDE" "$@"
+        exit_code=$?
+        
+        # Still process sessions after interactive use
+        "$PARENT_DIR/bin/claude-usage-monitor.js" process-sessions
+        
+        exit $exit_code
+    fi
+    
+    # Non-interactive mode - run with output capture
     "$REAL_CLAUDE" "$@" 2>&1 | tee "$output_file" | tee >(
         # Count lines and estimate tokens in the background
         # This is a rough estimate: ~4 characters per token

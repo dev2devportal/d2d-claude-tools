@@ -90,10 +90,21 @@ When you run `claude-wrapper`, you'll see:
 2. **Then Normal Claude Code Interface**
    ```
    ✻ Welcome to Claude Code!
-   
+
    /help for help, /status for your current setup
-   
+
    cwd: /your/project/directory
+
+   Tips for getting started:
+
+   1. Run /init to create a CLAUDE.md file with instructions for Claude
+   2. Use Claude to help with file analysis, editing, bash commands and git
+   3. Be as specific as you would with another engineer for the best results
+   4. ✔ Run /terminal-setup to set up terminal integration
+
+   ※ Tip: Press Esc twice to edit your previous messages
+
+   >
    ```
 
 ## Features While Working
