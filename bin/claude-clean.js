@@ -71,10 +71,21 @@ class ClaudeCleaner {
             return;
         }
 
+        // Get the tools project directory to protect CLAUDE.md there
+        const toolsProjectDir = path.resolve(__dirname, '..');
+        
         console.log(chalk.yellow(`Found ${this.foundItems.length} Claude artifact(s):`));
         
         for (const item of this.foundItems) {
+            const itemPath = path.resolve(item);
+            const isProjectClaudeMd = itemPath === path.join(toolsProjectDir, 'CLAUDE.md');
+            
             console.log(`  - ${item}`);
+            
+            if (isProjectClaudeMd) {
+                console.log(chalk.blue(`    ⚠ Skipped (project documentation)`));
+                continue;
+            }
             
             if (!this.dryRun) {
                 try {

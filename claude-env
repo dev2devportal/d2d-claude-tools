@@ -94,8 +94,30 @@ elif [ "$1" == "bash" ] || [ -z "$1" ]; then
     echo -e "${BLUE}Starting bash shell in Claude environment...${NC}"
     echo -e "${YELLOW}Type 'exit' to leave the Claude environment${NC}"
     
-    # Start a new bash session with custom prompt
-    PS1="[claude-env] $PS1" bash --norc -i
+    # Create a temporary bashrc that includes our tools in PATH
+    temp_bashrc=$(mktemp)
+    cat > "$temp_bashrc" <<EOF
+# Source user's bashrc if it exists
+[ -f ~/.bashrc ] && source ~/.bashrc
+
+# Add claude tools to PATH
+export PATH="$SCRIPT_DIR/bin:\$PATH"
+
+# Set custom prompt
+PS1="[claude-env] \$PS1"
+
+# Make tools available as functions for convenience
+claude-clean() { "$SCRIPT_DIR/bin/claude-clean.js" "\$@"; }
+claude-history() { "$SCRIPT_DIR/bin/claude-history.js" "\$@"; }
+claude-config() { "$SCRIPT_DIR/bin/claude-config.js" "\$@"; }
+claude-usage-monitor() { "$SCRIPT_DIR/bin/claude-usage-monitor.js" "\$@"; }
+EOF
+    
+    # Start a new bash session with our custom bashrc
+    bash --rcfile "$temp_bashrc" -i
+    
+    # Clean up
+    rm -f "$temp_bashrc"
 else
     # Execute any other command in the Claude environment
     echo -e "${BLUE}Running command in Claude environment: $@${NC}"

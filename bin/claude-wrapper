@@ -152,9 +152,9 @@ if command -v claude &> /dev/null; then
         messages=$(grep -c "^Human:\|^Assistant:" 2>/dev/null || echo "1")
         
         # Update session file with estimates
-        if [ -f "$SESSION_FILE" ]; then
+        if [ -f "$SESSION_FILE" ] && [ -n "$messages" ] && [ -n "$tokens" ]; then
             temp_file=$(mktemp)
-            jq ".messageCount = $messages | .estimatedTokens = $tokens" "$SESSION_FILE" > "$temp_file" && mv "$temp_file" "$SESSION_FILE"
+            jq --arg msg "$messages" --arg tok "$tokens" '.messageCount = ($msg | tonumber) | .estimatedTokens = ($tok | tonumber)' "$SESSION_FILE" > "$temp_file" && mv "$temp_file" "$SESSION_FILE"
         fi
     )
     
