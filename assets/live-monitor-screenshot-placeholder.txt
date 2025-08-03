@@ -1,0 +1,19 @@
+PLACEHOLDER FOR LIVE MONITOR SCREENSHOT
+
+Please replace ../assets/live-monitor-screenshot.png with an actual screenshot showing:
+
+1. The live monitor in action
+2. Multiple sections visible (Usage, Sessions, Progress, Alerts)
+3. Some example alerts
+4. The terminal should be large enough to show all sections clearly
+
+Suggested terminal size: At least 80x30 characters
+
+You can take the screenshot while running:
+claude-monitor-live --reset-hours 6 --alert-threshold 65
+
+The screenshot should show the beautiful TUI interface with:
+- Cyan borders
+- Color-coded progress bar
+- Real-time alerts
+- All four sections clearly visible

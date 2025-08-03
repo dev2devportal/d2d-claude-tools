@@ -12,8 +12,9 @@ This document provides detailed information about each tool in the d2d-claude-to
 - [claude-wrapper](#claude-wrapper)
 - [claude-env](#claude-env)
 
-For specific workflows, see:
+For specific workflows and guides, see:
 - [VSCodium + Claude Code Workflow](CODIUM_WORKFLOW.md) - Using Claude Code in VSCodium with full tracking
+- [Live Monitor Field Guide](LIVE_MONITOR_GUIDE.md) - Understanding all fields in the real-time monitor
 
 ## claude-clean
 

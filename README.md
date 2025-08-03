@@ -142,6 +142,7 @@ Comprehensive documentation is available in the `docs/` directory:
 
 - [Tools Reference](docs/TOOLS_REFERENCE.md) - Complete reference for all tools, commands, and options
 - [VSCodium Workflow](docs/CODIUM_WORKFLOW.md) - Using Claude Code in VSCodium with full tracking
+- [Live Monitor Guide](docs/LIVE_MONITOR_GUIDE.md) - Understanding every field in the real-time monitor
 - [Architecture Documentation](docs/ARCHITECTURE.md) - System design and component details
 - [Usage Guide](docs/USAGE_GUIDE.md) - Detailed usage instructions and workflows
 - [API Reference](docs/API_REFERENCE.md) - Technical API documentation
