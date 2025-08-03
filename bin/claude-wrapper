@@ -151,6 +151,9 @@ if command -v claude &> /dev/null; then
         tokens=$((chars / 4))
         messages=$(grep -c "^Human:\|^Assistant:" 2>/dev/null || echo "1")
         
+        # Ensure messages is a single number
+        messages=$(echo "$messages" | head -n1 | tr -d ' ')
+        
         # Update session file with estimates
         if [ -f "$SESSION_FILE" ] && [ -n "$messages" ] && [ -n "$tokens" ]; then
             temp_file=$(mktemp)

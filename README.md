@@ -63,9 +63,18 @@ source ~/.bashrc  # or ~/.zshrc depending on your shell
 ./claude-env npm test
 ```
 
+### Making Tools Available System-Wide (Optional)
+
+If you want the tools available in all terminals without using claude-env:
+
+```bash
+./scripts/install-path.sh
+source ~/.bashrc  # or ~/.zshrc
+```
+
 ### Using Claude Tools
 
-Within the Claude environment, all tools are available:
+Within the Claude environment (or system-wide if installed), all tools are available:
 
 ```bash
 # Clean Claude traces from current directory recursively
