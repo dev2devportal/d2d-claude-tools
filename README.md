@@ -31,17 +31,22 @@ This tool is being developed and tested on:
 ```bash
 # Clone the repository
 git clone https://github.com/dev2devportal/d2d-claude-tools.git
-cd d2d-claude-tools
+cd d2d-claude-tools-private
 
-# Set up nvm and Claude-specific Node environment
-./scripts/setup-nvm.sh
-
-# Install dependencies locally (no global installs)
+# Option 1: If nvm is already installed and configured in your shell
 ./claude-env npm install
+./claude-env npm run setup
 
-# Create local bin scripts (no system PATH modification)
+# Option 2: If you need to set up nvm first
+./scripts/setup-nvm.sh
+# Then open a new terminal or source your shell profile
+source ~/.bashrc  # or ~/.zshrc depending on your shell
+# Then continue with:
+./claude-env npm install
 ./claude-env npm run setup
 ```
+
+**Note:** The setup script detects nvm in standard locations including `~/.nvm`, `~/.config/nvm`, and `~/.configtde/nvm` (for Trinity Desktop users).
 
 ## Usage
 

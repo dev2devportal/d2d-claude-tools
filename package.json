@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dev2devportal/d2d-claude-tools.git"
+    "url": "git+https://git.dev2dev.net/claudecode1/d2d-claude-tools-private.git"
   },
   "license": "GPL-3.0",
   "main": "index.js",

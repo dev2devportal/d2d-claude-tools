@@ -36,14 +36,23 @@ fi
 
 # Source nvm if found
 if [ -s "$NVM_DIR/nvm.sh" ]; then
-    . "$NVM_DIR/nvm.sh"
+    source "$NVM_DIR/nvm.sh"
+    [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
 else
     echo -e "${YELLOW}Warning: nvm still not found after setup${NC}"
+    echo "Please ensure nvm is properly installed and try again"
+    exit 1
 fi
 
 # Switch to Claude-specific Node version
 echo -e "${BLUE}Switching to Claude-specific Node environment...${NC}"
-nvm use claude-tools || nvm use 18.19.0
+if ! nvm use claude-tools 2>/dev/null && ! nvm use 18.19.0 2>/dev/null; then
+    echo -e "${YELLOW}Node.js 18.19.0 is not installed yet${NC}"
+    echo "Installing Node.js 18.19.0..."
+    nvm install 18.19.0
+    nvm alias claude-tools 18.19.0
+    nvm use claude-tools
+fi
 
 # Add claude-tools to PATH for this session
 export PATH="$SCRIPT_DIR/bin:$PATH"
@@ -60,9 +69,9 @@ echo -e "Tools available: claude-clean, claude-history, claude-config, claude-us
 echo -e "Chat storage: $CLAUDE_CENTRAL_STORAGE"
 echo ""
 
-# Show current usage status on startup
-if [ -f "$SCRIPT_DIR/bin/claude-usage-monitor.js" ]; then
-    "$SCRIPT_DIR/bin/claude-usage-monitor.js" status
+# Show current usage status on startup (only if node_modules exists)
+if [ -f "$SCRIPT_DIR/bin/claude-usage-monitor.js" ] && [ -d "$SCRIPT_DIR/node_modules" ]; then
+    "$SCRIPT_DIR/bin/claude-usage-monitor.js" status 2>/dev/null || echo "Note: Run 'npm install' first to enable usage monitoring"
     echo ""
 fi
 
@@ -90,5 +99,18 @@ elif [ "$1" == "bash" ] || [ -z "$1" ]; then
 else
     # Execute any other command in the Claude environment
     echo -e "${BLUE}Running command in Claude environment: $@${NC}"
-    "$@"
+    
+    # For our tools, execute them directly without going through the claude wrapper
+    case "$1" in
+        claude-clean|claude-history|claude-config|claude-usage-monitor)
+            # Execute our tools directly
+            tool_name="$1"
+            shift
+            "$SCRIPT_DIR/bin/${tool_name}.js" "$@"
+            ;;
+        *)
+            # For other commands, execute normally
+            "$@"
+            ;;
+    esac
 fi

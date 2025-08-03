@@ -4,34 +4,47 @@
 # This script creates a sanitized copy for public release
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$( dirname "$SCRIPT_DIR" )"
-PUBLIC_DIR="$PROJECT_ROOT/d2d-claude-tools-public-version"
+PRIVATE_DIR="$( dirname "$SCRIPT_DIR" )"
+PUBLIC_DIR="$HOME/Documents/Dev2Dev/Development/AI/d2d-claude-tools-public"
 
 echo "Sanitizing project for public release..."
+echo "Private source: $PRIVATE_DIR"
+echo "Public destination: $PUBLIC_DIR"
 
-# Clean the public directory
-rm -rf "$PUBLIC_DIR"/*
-rm -rf "$PUBLIC_DIR"/.*
+# Ensure public directory exists
+if [ ! -d "$PUBLIC_DIR" ]; then
+    echo "Error: Public directory does not exist: $PUBLIC_DIR"
+    echo "Please create it first: mkdir -p $PUBLIC_DIR"
+    exit 1
+fi
+
+# Check if public directory has git initialized
+if [ ! -d "$PUBLIC_DIR/.git" ]; then
+    echo "Warning: Public directory does not have git initialized"
+    echo "You should run: cd $PUBLIC_DIR && git init"
+fi
+
+# Clean the public directory (except .git)
+echo "Cleaning public directory..."
+find "$PUBLIC_DIR" -mindepth 1 -maxdepth 1 -name '.git' -prune -o -exec rm -rf {} +
 
 # Copy all files except sensitive ones
-cp -r "$PROJECT_ROOT"/* "$PUBLIC_DIR/" 2>/dev/null || true
-cp "$PROJECT_ROOT"/.gitignore "$PUBLIC_DIR/"
-cp "$PROJECT_ROOT"/.nvmrc "$PUBLIC_DIR/"
-
-# Remove the public version directory from itself
-rm -rf "$PUBLIC_DIR/d2d-claude-tools-public-version"
+echo "Copying files..."
+cp -r "$PRIVATE_DIR"/* "$PUBLIC_DIR/" 2>/dev/null || true
+cp "$PRIVATE_DIR"/.gitignore "$PUBLIC_DIR/"
+cp "$PRIVATE_DIR"/.nvmrc "$PUBLIC_DIR/"
 
 # Remove sensitive scripts
+echo "Removing sensitive files..."
 rm -f "$PUBLIC_DIR/push-to-github.sh"
 rm -f "$PUBLIC_DIR/SANITIZATION_NOTES.md"
-rm -rf "$PUBLIC_DIR/.git"
 
 # Update version to indicate pre-alpha
 cd "$PUBLIC_DIR"
 
 # Sanitize files
 echo "Sanitizing README.md..."
-sed -i 's|https://git.dev2dev.net/Dev2Dev/d2d-claude-tools|https://github.com/dev2devportal/d2d-claude-tools|g' README.md
+sed -i 's|https://git.dev2dev.net/claudecode1/d2d-claude-tools-private|https://github.com/dev2devportal/d2d-claude-tools|g' README.md
 sed -i 's|Private development:.*|GitHub: https://github.com/dev2devportal/d2d-claude-tools|' README.md
 sed -i '/Public release (future):/d' README.md
 sed -i 's|Email: hawkenterprising@gmail.com||' README.md
@@ -48,7 +61,7 @@ sed -i 's|Hawke Robinson <hawkenterprising@gmail.com>|Hawke Robinson|' package.j
 sed -i '/"author":/a\  "repository": {\n    "type": "git",\n    "url": "git+https://github.com/dev2devportal/d2d-claude-tools.git"\n  },' package.json
 
 echo "Sanitizing CONTRIBUTING.md..."
-sed -i 's|https://git.dev2dev.net/Dev2Dev/d2d-claude-tools|https://github.com/dev2devportal/d2d-claude-tools|g' CONTRIBUTING.md
+sed -i 's|https://git.dev2dev.net/claudecode1/d2d-claude-tools-private|https://github.com/dev2devportal/d2d-claude-tools|g' CONTRIBUTING.md
 sed -i 's/# Contributing to Dev 2 Dev Claude Tools Private/# Contributing to Dev 2 Dev Claude Tools Public/' CONTRIBUTING.md
 # Remove private git configuration section
 sed -i '/## Git Configuration/,/## Code Style/{/## Code Style/!d;}' CONTRIBUTING.md
@@ -76,26 +89,12 @@ if [ ! -f "$PUBLIC_DIR/CODE_OF_CONDUCT.md" ]; then
     cp "$SCRIPT_DIR/../CODE_OF_CONDUCT.md" "$PUBLIC_DIR/" 2>/dev/null || echo "CODE_OF_CONDUCT.md not found"
 fi
 
+echo ""
 echo "Sanitization complete!"
 echo "Public version ready in: $PUBLIC_DIR"
-
-# Safety check - ensure public directory has correct remote
 echo ""
-echo "Verifying Git remotes for safety..."
-cd "$PUBLIC_DIR"
-if git remote -v | grep -q "git.dev2dev.net"; then
-    echo "WARNING: Private repository remote detected in public directory!"
-    echo "Removing private remote for safety..."
-    git remote remove origin 2>/dev/null || true
-    echo "Please manually set the correct GitHub remote."
-else
-    echo "✓ No private remotes found in public directory"
-fi
-
-# Ensure only GitHub remote exists
-if ! git remote -v | grep -q "github.com/dev2devportal/d2d-claude-tools"; then
-    echo "Setting up correct GitHub remote..."
-    git remote remove origin 2>/dev/null || true
-    git remote add origin git@github.com:dev2devportal/d2d-claude-tools.git
-    echo "✓ GitHub remote configured"
-fi
+echo "Next steps:"
+echo "1. cd $PUBLIC_DIR"
+echo "2. git add -A"
+echo "3. git commit -m 'Update from private repository'"
+echo "4. git push origin main"

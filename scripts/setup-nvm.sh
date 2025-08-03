@@ -30,7 +30,24 @@ else
 fi
 
 # Source nvm from the detected directory
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+echo "Sourcing nvm from $NVM_DIR..."
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+    # Source nvm and its bash completion if available
+    source "$NVM_DIR/nvm.sh"
+    [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
+    echo "nvm loaded successfully"
+else
+    echo "Error: Could not source nvm from $NVM_DIR/nvm.sh"
+    exit 1
+fi
+
+# Check if nvm is available
+if ! type nvm &> /dev/null; then
+    echo "Error: nvm command not found after sourcing"
+    echo "This might be because nvm needs to be sourced in your shell profile"
+    echo "Try running: source $NVM_DIR/nvm.sh"
+    exit 1
+fi
 
 # Install the specific Node version for Claude tools
 echo "Installing Node.js $CLAUDE_NODE_VERSION for Claude tools..."
