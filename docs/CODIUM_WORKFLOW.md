@@ -49,27 +49,25 @@ which claude
 
 ### Starting Your Work Session
 
-1. **Open a terminal for live monitoring** (RECOMMENDED)
+1. **Terminal 1: Start live monitoring** (RECOMMENDED)
    ```bash
-   # Start the live monitor to watch usage in real-time
-   claude-monitor-live
-   
-   # Or for Max tier with potential 6-hour resets:
+   cd ~/d2d-claude-tools-private
+   ./claude-env
+   # Now in (d2dtool-env) shell
    claude-monitor-live --reset-hours 6 --alert-threshold 65
    ```
    Keep this terminal visible while working!
 
-2. **In another terminal, navigate to your project**
+2. **Terminal 2: Start VSCodium in d2dtool-env**
    ```bash
+   cd ~/d2d-claude-tools-private
+   ./claude-env
+   # Now in (d2dtool-env) shell
    cd ~/Documents/Dev2Dev/Clients/MyProject/feature-branch
-   ```
-
-3. **Start VSCodium**
-   ```bash
    codium .
    ```
 
-4. **In VSCodium's integrated terminal, use claude-wrapper**
+3. **In VSCodium's integrated terminal, use claude-wrapper**
    ```bash
    claude-wrapper
    ```
@@ -213,22 +211,56 @@ claude-history show conv_12345
 
 ## Multiple Projects Workflow
 
+Within the same d2dtool-env session:
 ```bash
+# Already in (d2dtool-env) from Terminal 2
 # Project A - morning work
 cd ~/projects/project-a
 codium .
-# In terminal: claude-wrapper
+# In VSCodium terminal: claude-wrapper
 # Work on feature X...
 
-# Project B - afternoon work
+# Project B - afternoon work  
 cd ~/projects/project-b
 codium .
-# In terminal: claude-wrapper
+# In VSCodium terminal: claude-wrapper
 # Can reference morning's conversation!
 
 # End of day - check everything
 claude-history list
 claude-usage-monitor
+```
+
+## Complete Setup Checklist
+
+Before starting work each day:
+- [ ] Pull latest d2d-claude-tools updates: `git pull`
+- [ ] Run `./claude-env npm install` if package.json changed
+- [ ] Start Terminal 1 with live monitor
+- [ ] Start Terminal 2 in d2dtool-env for VSCodium
+- [ ] Verify `claude-wrapper` works in VSCodium terminal
+
+## Key Commands Reference
+
+Inside (d2dtool-env):
+```bash
+# Live monitoring
+claude-monitor-live --reset-hours 6
+
+# Check usage anytime
+claude-usage-monitor
+
+# Clean projects before commits
+claude-clean -r
+
+# View chat history
+claude-history list
+
+# Search past conversations
+claude-history search "topic"
+
+# Exit d2dtool-env (keeps terminal open)
+deactivate
 ```
 
 ## Troubleshooting
@@ -258,6 +290,17 @@ Check if claude-wrapper is running properly:
 ```bash
 # Should show usage stats first
 claude-wrapper --version
+```
+
+### Live monitor shows blank screen
+
+The terminal UI needs a minimum size. Make terminal window larger.
+
+### Live monitor not updating
+
+Check if session files are being created:
+```bash
+ls -la ~/.claude-centralized/sessions/
 ```
 
 ## Best Practices
