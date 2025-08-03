@@ -1,0 +1,94 @@
+#!/bin/bash
+
+# claude-env
+# This script starts an isolated environment for Claude tools with the correct Node version
+
+# Colors for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+echo -e "${BLUE}Starting Claude tools environment...${NC}"
+
+# Source nvm - check multiple possible locations
+if [ -s "$HOME/.nvm/nvm.sh" ]; then
+    export NVM_DIR="$HOME/.nvm"
+elif [ -s "$HOME/.configtde/nvm/nvm.sh" ]; then
+    export NVM_DIR="$HOME/.configtde/nvm"
+elif [ -s "$HOME/.config/nvm/nvm.sh" ]; then
+    export NVM_DIR="$HOME/.config/nvm"
+else
+    echo -e "${YELLOW}nvm not found. Running setup...${NC}"
+    "$SCRIPT_DIR/scripts/setup-nvm.sh"
+    # Re-check after setup
+    if [ -s "$HOME/.nvm/nvm.sh" ]; then
+        export NVM_DIR="$HOME/.nvm"
+    elif [ -s "$HOME/.configtde/nvm/nvm.sh" ]; then
+        export NVM_DIR="$HOME/.configtde/nvm"
+    elif [ -s "$HOME/.config/nvm/nvm.sh" ]; then
+        export NVM_DIR="$HOME/.config/nvm"
+    fi
+fi
+
+# Source nvm if found
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+    . "$NVM_DIR/nvm.sh"
+else
+    echo -e "${YELLOW}Warning: nvm still not found after setup${NC}"
+fi
+
+# Switch to Claude-specific Node version
+echo -e "${BLUE}Switching to Claude-specific Node environment...${NC}"
+nvm use claude-tools || nvm use 18.19.0
+
+# Add claude-tools to PATH for this session
+export PATH="$SCRIPT_DIR/bin:$PATH"
+export CLAUDE_TOOLS_HOME="$SCRIPT_DIR"
+
+# Set up environment variable for centralized chat storage
+export CLAUDE_CENTRAL_STORAGE="${CLAUDE_CENTRAL_STORAGE:-$HOME/.claude-centralized}"
+
+# Create storage directory if it doesn't exist
+mkdir -p "$CLAUDE_CENTRAL_STORAGE"
+
+echo -e "${GREEN}Claude tools environment activated!${NC}"
+echo -e "Tools available: claude-clean, claude-history, claude-config, claude-usage-monitor"
+echo -e "Chat storage: $CLAUDE_CENTRAL_STORAGE"
+echo ""
+
+# Show current usage status on startup
+if [ -f "$SCRIPT_DIR/bin/claude-usage-monitor.js" ]; then
+    "$SCRIPT_DIR/bin/claude-usage-monitor.js" status
+    echo ""
+fi
+
+# Add notice about the claude wrapper
+if [ -f "$SCRIPT_DIR/bin/claude" ]; then
+    echo -e "${YELLOW}Note: Use 'claude' command to automatically track usage${NC}"
+    echo ""
+fi
+
+# Parse command line arguments
+if [ "$1" == "codium" ]; then
+    echo -e "${BLUE}Starting VSCodium in Claude environment...${NC}"
+    shift
+    codium "$@"
+elif [ "$1" == "code" ]; then
+    echo -e "${BLUE}Starting VS Code in Claude environment...${NC}"
+    shift
+    code "$@"
+elif [ "$1" == "bash" ] || [ -z "$1" ]; then
+    echo -e "${BLUE}Starting bash shell in Claude environment...${NC}"
+    echo -e "${YELLOW}Type 'exit' to leave the Claude environment${NC}"
+    
+    # Start a new bash session with custom prompt
+    PS1="[claude-env] $PS1" bash --norc -i
+else
+    # Execute any other command in the Claude environment
+    echo -e "${BLUE}Running command in Claude environment: $@${NC}"
+    "$@"
+fi

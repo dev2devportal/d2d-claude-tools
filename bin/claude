@@ -1,0 +1,162 @@
+#!/bin/bash
+
+# claude wrapper script
+# This script wraps the claude code command to track usage automatically
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PARENT_DIR="$( dirname "$SCRIPT_DIR" )"
+
+# Session tracking file
+SESSION_DIR="${CLAUDE_CENTRAL_STORAGE:-$HOME/.claude-centralized}/sessions"
+SESSION_ID="$$-$(date +%s)"
+SESSION_FILE="$SESSION_DIR/session-$SESSION_ID.json"
+
+# Ensure session directory exists
+mkdir -p "$SESSION_DIR"
+
+# Function to clean up old session files (older than 48 hours)
+cleanup_old_sessions() {
+    find "$SESSION_DIR" -name "session-*.json" -mtime +2 -delete 2>/dev/null || true
+}
+
+# Function to record session start
+record_session_start() {
+    cat > "$SESSION_FILE" <<EOF
+{
+    "sessionId": "$SESSION_ID",
+    "pid": $$,
+    "startTime": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+    "endTime": null,
+    "messageCount": 0,
+    "estimatedTokens": 0,
+    "command": "$*",
+    "active": true
+}
+EOF
+}
+
+# Function to update session on exit
+update_session_end() {
+    if [ -f "$SESSION_FILE" ]; then
+        # Update the session file to mark it as ended
+        local temp_file=$(mktemp)
+        jq '.active = false | .endTime = "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'"' "$SESSION_FILE" > "$temp_file" && mv "$temp_file" "$SESSION_FILE"
+    fi
+    
+    # Update usage monitor with session data
+    "$PARENT_DIR/bin/claude-usage-monitor.js" process-sessions
+}
+
+# Set up exit trap
+trap update_session_end EXIT
+
+# Clean up old sessions
+cleanup_old_sessions
+
+# Record session start
+record_session_start "$@"
+
+# Check for active sessions and warn if too many
+active_sessions=$(find "$SESSION_DIR" -name "session-*.json" -exec jq -r 'select(.active == true) | .sessionId' {} \; 2>/dev/null | wc -l)
+
+if [ "$active_sessions" -gt 2 ]; then
+    echo -e "\033[1;33m⚠️  WARNING: $active_sessions concurrent Claude sessions detected!\033[0m"
+    echo -e "\033[1;33mMultiple concurrent sessions increase the risk of hitting usage limits.\033[0m"
+    echo ""
+fi
+
+# Show current usage before starting
+"$PARENT_DIR/bin/claude-usage-monitor.js" status
+
+# Throttle detection patterns
+THROTTLE_PATTERNS=(
+    "You've reached your usage limit"
+    "usage limit"
+    "rate limit"
+    "too many requests"
+    "please try again later"
+    "switching to a different model"
+    "downgraded"
+    "exceeded your quota"
+    "maximum usage"
+    "conversation limit"
+)
+
+# Function to check for throttle messages
+detect_throttle() {
+    local output="$1"
+    for pattern in "${THROTTLE_PATTERNS[@]}"; do
+        if echo "$output" | grep -qi "$pattern"; then
+            return 0  # Throttle detected
+        fi
+    done
+    return 1  # No throttle detected
+}
+
+# Function to log throttle event
+log_throttle_event() {
+    local throttle_dir="${CLAUDE_CENTRAL_STORAGE:-$HOME/.claude-centralized}/throttle-events"
+    mkdir -p "$throttle_dir"
+    
+    # Get current usage stats
+    local usage_data=$("$PARENT_DIR/bin/claude-usage-monitor.js" export-current 2>/dev/null || echo "{}")
+    
+    # Create throttle event record
+    local event_file="$throttle_dir/throttle-$(date +%Y%m%d-%H%M%S).json"
+    cat > "$event_file" <<EOF
+{
+    "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+    "sessionId": "$SESSION_ID",
+    "subscription": $(echo "$usage_data" | jq -r '.subscription // "unknown"' | jq -R .),
+    "messageCount": $(echo "$usage_data" | jq -r '.currentPeriod.messageCount // 0'),
+    "tokenCount": $(echo "$usage_data" | jq -r '.currentPeriod.tokenCount // 0'),
+    "sessionCount": $(echo "$usage_data" | jq -r '.currentPeriod.sessionCount // 0'),
+    "activeSessions": $active_sessions,
+    "peakConcurrentSessions": $(echo "$usage_data" | jq -r '.currentPeriod.peakConcurrentSessions // 0'),
+    "hoursIntoPeriod": $(echo "$usage_data" | jq -r '.hoursIntoPeriod // 0'),
+    "command": $(echo "$*" | jq -R .),
+    "detectedPattern": "throttle_detected"
+}
+EOF
+    
+    echo -e "\033[1;31m⚠️  THROTTLE EVENT DETECTED AND LOGGED!\033[0m"
+    echo -e "\033[1;33mThis data will help improve threshold estimates.\033[0m"
+    
+    # Trigger threshold analysis
+    "$PARENT_DIR/bin/claude-usage-monitor.js" analyze-thresholds
+}
+
+# Forward to the actual claude command
+# First check if claude is available
+if command -v claude &> /dev/null; then
+    # Create temp file for output
+    output_file=$(mktemp)
+    
+    # Run claude and capture its output
+    claude "$@" 2>&1 | tee "$output_file" | tee >(
+        # Count lines and estimate tokens in the background
+        # This is a rough estimate: ~4 characters per token
+        chars=$(wc -c)
+        tokens=$((chars / 4))
+        messages=$(grep -c "^Human:\|^Assistant:" 2>/dev/null || echo "1")
+        
+        # Update session file with estimates
+        if [ -f "$SESSION_FILE" ]; then
+            temp_file=$(mktemp)
+            jq ".messageCount = $messages | .estimatedTokens = $tokens" "$SESSION_FILE" > "$temp_file" && mv "$temp_file" "$SESSION_FILE"
+        fi
+    )
+    
+    # Check for throttle messages
+    if detect_throttle "$(cat "$output_file")"; then
+        log_throttle_event "$@"
+    fi
+    
+    # Clean up
+    rm -f "$output_file"
+else
+    echo "Error: 'claude' command not found. Please ensure Claude Code is installed."
+    echo "Visit: https://claude.ai/code"
+    exit 1
+fi

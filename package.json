@@ -1,0 +1,39 @@
+{
+  "name": "d2d-claude-tools",
+  "version": "2025.01.02.000000",
+  "description": "Dev 2 Dev Claude Tools Public - Centralized Chat History and Clean Projects",
+  "author": "Hawke Robinson",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dev2devportal/d2d-claude-tools.git"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dev2devportal/d2d-claude-tools.git"
+  },
+  "license": "GPL-3.0",
+  "main": "index.js",
+  "scripts": {
+    "setup": "node scripts/setup.js",
+    "clean": "node bin/claude-clean.js",
+    "history": "node bin/claude-history.js",
+    "config": "node bin/claude-config.js",
+    "usage": "node bin/claude-usage-monitor.js"
+  },
+  "bin": {
+    "claude-clean": "./bin/claude-clean.js",
+    "claude-history": "./bin/claude-history.js",
+    "claude-config": "./bin/claude-config.js",
+    "claude-usage-monitor": "./bin/claude-usage-monitor.js",
+    "claude": "./bin/claude"
+  },
+  "dependencies": {
+    "commander": "^11.0.0",
+    "fs-extra": "^11.1.1",
+    "glob": "^10.3.0",
+    "chalk": "^4.1.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
