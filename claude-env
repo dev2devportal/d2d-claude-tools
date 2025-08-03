@@ -76,8 +76,8 @@ if [ -f "$SCRIPT_DIR/bin/claude-usage-monitor.js" ] && [ -d "$SCRIPT_DIR/node_mo
 fi
 
 # Add notice about the claude wrapper
-if [ -f "$SCRIPT_DIR/bin/claude" ]; then
-    echo -e "${YELLOW}Note: Use 'claude' command to automatically track usage${NC}"
+if [ -f "$SCRIPT_DIR/bin/claude-wrapper" ]; then
+    echo -e "${YELLOW}Note: Use 'claude-wrapper' command to automatically track Claude CLI usage${NC}"
     echo ""
 fi
 

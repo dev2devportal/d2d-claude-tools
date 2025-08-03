@@ -8,13 +8,13 @@ This project provides tools to centralize Claude Code conversations and ensure n
 2. **Usage Monitor** - Tracks API usage to avoid hitting limits
 3. **History Manager** - Centralizes chat histories by user directory
 4. **Config Manager** - Manages tool configuration
-5. **Claude Wrapper** - Automatically tracks usage when using Claude
+5. **Claude Wrapper** - Automatically tracks usage when using Claude CLI (use as `claude-wrapper` instead of `claude`)
 
 ## Project Structure
 ```
 d2d-claude-tools-private/
 ├── bin/                    # Executable scripts
-│   ├── claude             # Wrapper for Claude command
+│   ├── claude-wrapper     # Wrapper for Claude CLI to track usage
 │   ├── claude-clean.js    # Removes Claude artifacts
 │   ├── claude-config.js   # Configuration manager
 │   ├── claude-history.js  # Chat history browser

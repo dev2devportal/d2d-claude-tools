@@ -128,13 +128,23 @@ EOF
 }
 
 # Forward to the actual claude command
-# First check if claude is available
+# First we need to find the REAL claude command, not our wrapper
+# Remove our bin directory from PATH temporarily
+ORIGINAL_PATH="$PATH"
+SCRIPT_BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+NEW_PATH=$(echo "$PATH" | tr ':' '\n' | grep -v "^$SCRIPT_BIN_DIR$" | tr '\n' ':' | sed 's/:$//')
+export PATH="$NEW_PATH"
+
+# Now check if the real claude is available
 if command -v claude &> /dev/null; then
+    REAL_CLAUDE=$(command -v claude)
+    # Restore original PATH
+    export PATH="$ORIGINAL_PATH"
     # Create temp file for output
     output_file=$(mktemp)
     
-    # Run claude and capture its output
-    claude "$@" 2>&1 | tee "$output_file" | tee >(
+    # Run the real claude and capture its output
+    "$REAL_CLAUDE" "$@" 2>&1 | tee "$output_file" | tee >(
         # Count lines and estimate tokens in the background
         # This is a rough estimate: ~4 characters per token
         chars=$(wc -c)
@@ -156,7 +166,17 @@ if command -v claude &> /dev/null; then
     # Clean up
     rm -f "$output_file"
 else
-    echo "Error: 'claude' command not found. Please ensure Claude Code is installed."
-    echo "Visit: https://claude.ai/code"
+    # Restore original PATH
+    export PATH="$ORIGINAL_PATH"
+    
+    echo "Error: 'claude' command not found. Please ensure Claude Code CLI is installed."
+    echo "The 'claude' wrapper script is for tracking usage of the actual Claude CLI."
+    echo ""
+    echo "To install Claude Code CLI:"
+    echo "1. Visit: https://claude.ai/code"
+    echo "2. Install the Claude desktop app"
+    echo "3. The CLI should be available after installation"
+    echo ""
+    echo "Note: This wrapper is meant to track usage, not replace the Claude CLI."
     exit 1
 fi

@@ -82,6 +82,9 @@ claude-usage-monitor              # Show current status
 claude-usage-monitor record       # Record a message sent
 claude-usage-monitor record 5     # Record 5 messages
 claude-usage-monitor history      # Show usage history
+
+# Use the Claude CLI wrapper (if you have Claude CLI installed)
+claude-wrapper                    # Runs claude with automatic usage tracking
 ```
 
 Or run directly without entering the environment:
