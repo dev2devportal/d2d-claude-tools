@@ -1,7 +1,5 @@
 > ⚠️ **PRE-ALPHA SOFTWARE**: This is version 2025.01.02 - untested and under heavy development. Use at your own risk!
-
-> ⚠️ **PRE-ALPHA SOFTWARE**: This is version 2025.01.02 - untested and under heavy development. Use at your own risk!
-
+> 
 # Dev 2 Dev Claude Tools Public
 
 A tool to centralize Claude Code conversations by user directory and ensure no traces of Claude usage remain in project directories or git commits.
@@ -17,6 +15,14 @@ A tool to centralize Claude Code conversations by user directory and ensure no t
 - Automatic detection of rate limiting and downgrade messages
 - Integrates with Claude Code's existing infrastructure
 - Completely user-directory based - no system-level modifications
+
+**d2d-claude-tools claude-wrapper screenshot**
+
+![Alt text](docs/snapshot62.png){width=300 height=200}
+
+**Screenshot of Real-Time Usage Monitor**
+
+![Alt text](docs/snapshot61.png){width=300 height=200}
 
 ## System Requirements
 
